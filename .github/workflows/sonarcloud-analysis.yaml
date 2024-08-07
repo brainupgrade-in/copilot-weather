@@ -36,4 +36,6 @@ jobs:
           sonar.organization: brainupgrade-in
           sonar.projectKey: brainupgrade-in_copilot_weather
         with:
-          args: -X          
+          args: >
+            -Dsonar.branch.name=${{ github.ref_name }}
+            -X      
