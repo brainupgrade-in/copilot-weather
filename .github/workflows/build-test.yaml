@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'  # Specify the Python version you need
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run application
+      run: |
+        ./run_server.sh &
+        sleep 5  # Wait for the server to start
+        status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000)  # Test the URL
+        if [ $status -eq 200 ]; then
+          echo "Application is running successfully"
+          # Add your shutdown command here
+        else
+          echo "Application failed to start"
+          # Add error handling code here
+        fi
