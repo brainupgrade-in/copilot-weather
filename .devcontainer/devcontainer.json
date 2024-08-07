@@ -21,11 +21,7 @@
                 "python.testing.unittestEnabled": true,
                 "python.testing.pytestEnabled": true,
                 "python.testing.nosetestsEnabled": false,
-                "python.testing.autoTestDiscoverOnSaveEnabled": true,
-                "github.copilot.enable": {
-                    "enable": true
-                },
-                "github.copilot.chat.enable": true
+                "python.testing.autoTestDiscoverOnSaveEnabled": true
             },
             "extensions": [
                 "ms-python.python",
