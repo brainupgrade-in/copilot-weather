@@ -3,5 +3,8 @@
 # Activate virtual environment if needed
 # source venv/bin/activate
 
-# Run the Python web server
-python3 server.py
+# Set the Flask app environment variable
+export FLASK_APP=server.py
+
+# Run the Flask web server
+flask run
