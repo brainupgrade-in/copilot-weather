@@ -1,4 +1,4 @@
 Flask
 requests
 werkzeug==3.0.3
-markupsafe
+markupsafe==2.1.1
