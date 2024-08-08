@@ -7,39 +7,35 @@ pipeline {
     }
 
     stages {
-        stage('Initialize') {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Check Tag') {
             steps {
                 script {
-                    // Extract the tag name if available
-                    // print env.GIT_BRANCH
-                    echo env.GIT_BRANCH
-                    if (env.GIT_BRANCH?.startsWith('refs/tags/')) {
-                        env.TAG_NAME = env.GIT_BRANCH.replaceFirst('refs/tags/', '')
-                    }
-                    echo env.GIT_TAG
-                    // Determine if the build should proceed
-                    if (env.GIT_BRANCH == 'main' && (env.TAG_NAME && env.TAG_NAME.startsWith('v'))) {
-                        env.SHOULD_BUILD = "true"
+                    // Get the tag associated with the latest commit
+                    def tagName = sh(script: 'git tag --points-at HEAD', returnStdout: true).trim()
+                    
+                    // Check if a tag is associated with the latest commit
+                    if (tagName) {
+                        echo "Tag found: ${tagName}"
+                        // Set an environment variable to use in other stages
+                        env.TAG_NAME = tagName
                     } else {
-                        env.SHOULD_BUILD = "false"
-                        error("Skipping build as the tag does not start with 'v' or it is not on the main branch.")
+                        echo "No tag associated with the latest commit."
+                        // Skip the rest of the stages
+                        currentBuild.result = 'SUCCESS'
+                        error('No tag associated with the latest commit, skipping build stages.')
                     }
                 }
             }
         }
 
-        stage('Checkout') {
-            when {
-                expression { return env.SHOULD_BUILD == 'true' }
-            }
-            steps {
-                git url: 'https://github.com/brainupgrade-in/copilot-weather.git', branch: env.BRANCH_NAME
-            }
-        }
-
         stage('Build') {
             when {
-                expression { return env.SHOULD_BUILD == 'true' }
+                environment name: 'TAG_NAME', value: '.+'
             }
             steps {
                 sh 'echo "Building..."'
@@ -49,7 +45,7 @@ pipeline {
 
         stage('Test') {
             when {
-                expression { return env.SHOULD_BUILD == 'true' }
+                environment name: 'TAG_NAME', value: '.+'
             }
             steps {
                 sh 'echo "Testing..."'
@@ -59,7 +55,7 @@ pipeline {
 
         stage('Deploy') {
             when {
-                expression { return env.SHOULD_BUILD == 'true' }
+                environment name: 'TAG_NAME', value: '.+'
             }
             steps {
                 sh 'echo "Deploying..."'
