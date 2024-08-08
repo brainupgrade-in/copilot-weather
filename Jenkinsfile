@@ -35,31 +35,65 @@ pipeline {
 
         stage('Build') {
             when {
-                environment name: 'TAG_NAME', value: '.+'
+                environment name: 'TAG_NAME', value: 'v.+'
             }
             steps {
-                sh 'echo "Building..."'
-                // Add your build commands here
+                script {
+                    def tagName = env.GIT_TAG
+                    docker.build("${DOCKER_IMAGE}:${tagName}")
+                }
             }
         }
-
-        stage('Test') {
+        stage('Deploy to Integration') {
             when {
-                environment name: 'TAG_NAME', value: '.+'
-            }
+                environment name: 'TAG_NAME', value: 'v.+'
+            }            
             steps {
-                sh 'echo "Testing..."'
-                // Add your test commands here
+                script {
+                    def tagName = env.GIT_TAG
+                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=integration"
+                    echo "Deploying to Integration"
+                }
             }
         }
-
-        stage('Deploy') {
+        stage('Approval for UAT') {
             when {
-                environment name: 'TAG_NAME', value: '.+'
-            }
+                environment name: 'TAG_NAME', value: 'v.+'
+            }            
             steps {
-                sh 'echo "Deploying..."'
-                // Add your deployment commands here
+                input message: 'Deploy to UAT?', ok: 'Deploy'
+            }
+        }
+        stage('Deploy to UAT') {
+            when {
+                environment name: 'TAG_NAME', value: 'v.+'
+            }            
+            steps {
+                script {
+                    def tagName = env.GIT_TAG
+                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=uat"
+                    echo "Deploying to UAT"
+                }
+            }
+        }
+        stage('Approval for PROD') {
+            when {
+                environment name: 'TAG_NAME', value: 'v.+'
+            }            
+            steps {
+                input message: 'Deploy to PROD?', ok: 'Deploy'
+            }
+        }
+        stage('Deploy to PROD') {
+            when {
+                environment name: 'TAG_NAME', value: 'v.+'
+            }            
+            steps {
+                script {
+                    def tagName = env.GIT_TAG
+                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=prod"
+                    echo "Deploying to PROD"
+                }
             }
         }
     }
