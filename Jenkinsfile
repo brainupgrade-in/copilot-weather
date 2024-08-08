@@ -4,14 +4,14 @@ pipeline {
     environment {
         DOCKER_IMAGE = "brainupgrade/copilot-weather"
     }
-
+    when {
+        expression {
+            return env.BRANCH_NAME == 'main' && env.GIT_TAG =~ /^v/
+        }
+    }
     stages {
         stage('Build') {
-            when {
-                expression {
-                    return env.BRANCH_NAME == 'main' && env.GIT_TAG =~ /^v/
-                }
-            }
+
             steps {
                 script {
                     def tagName = env.GIT_TAG
