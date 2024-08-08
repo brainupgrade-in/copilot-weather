@@ -1,6 +1,11 @@
 name: Create Release
 
 on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name'
+        required: true  
   push:
     tags:
       - 'v*'
@@ -16,14 +21,13 @@ jobs:
     - name: Get previous tag
       id: prev-tag
       run: |
-        prev_tag=$(git describe --tags --abbrev=0 HEAD^)
-        echo "::set-output name=prev_tag::$prev_tag"
+        echo ::set-output name=prev_tag::$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
 
     - name: Generate release notes
       id: release-notes
       run: |
         prev_tag=${{ steps.prev-tag.outputs.prev_tag }}
-        current_tag=${{ github.ref_name }}
+        current_tag=${{ github.event.inputs.tag_name || github.ref_name }}
         release_notes=$(git log $prev_tag..$current_tag --oneline)
         echo "::set-output name=release_notes::$release_notes"
 
@@ -32,6 +36,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref_name }}
-        release_name: ${{ github.ref_name }}
+        tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
+        release_name: ${{ github.event.inputs.tag_name || github.ref_name }}
         body: ${{ steps.release-notes.outputs.release_notes }}
