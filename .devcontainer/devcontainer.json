@@ -2,7 +2,8 @@
     "name": "Python Dev Container",
     "image": "mcr.microsoft.com/vscode/devcontainers/python:3.9",
     "features": {
-        "ghcr.io/devcontainers/features/github-cli:1": {}
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:1": {}
     },
     "postCreateCommand": "pip3 install -r requirements.txt",
     "customizations": {
