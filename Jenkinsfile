@@ -8,7 +8,9 @@ pipeline {
     stages {
         stage('Build') {
             when {
-                tag "*"
+                expression {
+                    return env.BRANCH_NAME == 'main' && env.GIT_TAG =~ /^v/
+                }
             }
             steps {
                 script {
