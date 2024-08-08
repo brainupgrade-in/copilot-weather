@@ -11,16 +11,18 @@ pipeline {
             steps {
                 script {
                     // Extract the tag name if available
+                    // print env.GIT_BRANCH
+                    sh 'echo "${env.GIT_BRANCH}"'
                     if (env.GIT_BRANCH?.startsWith('refs/tags/')) {
                         env.TAG_NAME = env.GIT_BRANCH.replaceFirst('refs/tags/', '')
                     }
-
+                    sh 'echo "${env.GIT_TAG}"'
                     // Determine if the build should proceed
-                    if (env.BRANCH_NAME == 'main' || (env.TAG_NAME && env.TAG_NAME.startsWith('v'))) {
+                    if (env.GIT_BRANCH == 'main' && (env.TAG_NAME && env.TAG_NAME.startsWith('v'))) {
                         env.SHOULD_BUILD = "true"
                     } else {
                         env.SHOULD_BUILD = "false"
-                        error("Skipping build as the branch is not 'main' and the tag does not start with 'v'.")
+                        error("Skipping build as the tag does not start with 'v' or it is not on the main branch.")
                     }
                 }
             }
