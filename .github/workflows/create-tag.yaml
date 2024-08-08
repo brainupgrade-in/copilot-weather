@@ -1,0 +1,26 @@
+name: Create Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name'
+        required: true
+      tag_message:
+        description: 'Tag message'
+        required: true
+
+jobs:
+  create_tag:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Create Git Tag
+      run: |
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+        git tag -a ${{ github.event.inputs.tag_name }} -m "${{ github.event.inputs.tag_message }}"
+        git push origin ${{ github.event.inputs.tag_name }}
