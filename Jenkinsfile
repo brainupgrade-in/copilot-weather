@@ -12,11 +12,11 @@ pipeline {
                 script {
                     // Extract the tag name if available
                     // print env.GIT_BRANCH
-                    sh 'echo "${env.GIT_BRANCH}"'
+                    echo env.GIT_BRANCH
                     if (env.GIT_BRANCH?.startsWith('refs/tags/')) {
                         env.TAG_NAME = env.GIT_BRANCH.replaceFirst('refs/tags/', '')
                     }
-                    sh 'echo "${env.GIT_TAG}"'
+                    echo env.GIT_TAG
                     // Determine if the build should proceed
                     if (env.GIT_BRANCH == 'main' && (env.TAG_NAME && env.TAG_NAME.startsWith('v'))) {
                         env.SHOULD_BUILD = "true"
