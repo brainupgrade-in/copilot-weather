@@ -14,6 +14,9 @@ jobs:
   create_tag:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
     - name: Check out repository
       uses: actions/checkout@v2
@@ -24,3 +27,5 @@ jobs:
         git config --global user.email "${{ github.actor }}@users.noreply.github.com"
         git tag -a ${{ github.event.inputs.tag_name }} -m "${{ github.event.inputs.tag_message }}"
         git push origin ${{ github.event.inputs.tag_name }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
