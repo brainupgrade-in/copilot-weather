@@ -21,7 +21,8 @@ pipeline {
             steps {
                 script {
                     def tagName = env.GIT_TAG
-                    sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=integration"
+                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=integration"
+                    echo "Deploying to Integration"
                 }
             }
         }
@@ -34,7 +35,8 @@ pipeline {
             steps {
                 script {
                     def tagName = env.GIT_TAG
-                    sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=uat"
+                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=uat"
+                    echo "Deploying to UAT"
                 }
             }
         }
@@ -47,7 +49,8 @@ pipeline {
             steps {
                 script {
                     def tagName = env.GIT_TAG
-                    sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=prod"
+                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=prod"
+                    echo "Deploying to PROD"
                 }
             }
         }
