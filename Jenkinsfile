@@ -2,86 +2,80 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "brainupgrade/copilot-weather"
-        BRANCH_NAME = "${env.BRANCH_NAME}"
-        TAG_NAME = "${env.TAG_NAME}"
+        TAG_NAME = ""
+        SHOULD_BUILD = "false"
     }
 
     stages {
+        stage('Initialize') {
+            steps {
+                script {
+                    // Extract the tag name if available
+                    if (env.GIT_BRANCH?.startsWith('refs/tags/')) {
+                        env.TAG_NAME = env.GIT_BRANCH.replaceFirst('refs/tags/', '')
+                    }
+
+                    // Determine if the build should proceed
+                    if (env.BRANCH_NAME == 'main' || (env.TAG_NAME && env.TAG_NAME.startsWith('v'))) {
+                        env.SHOULD_BUILD = "true"
+                    } else {
+                        env.SHOULD_BUILD = "false"
+                        error("Skipping build as the branch is not 'main' and the tag does not start with 'v'.")
+                    }
+                }
+            }
+        }
+
+        stage('Checkout') {
+            when {
+                expression { return env.SHOULD_BUILD == 'true' }
+            }
+            steps {
+                git url: 'https://github.com/brainupgrade-in/copilot-weather.git', branch: env.BRANCH_NAME
+            }
+        }
+
         stage('Build') {
             when {
-                expression {
-                    return BRANCH_NAME == 'main' || (TAG_NAME != null && TAG_NAME.startsWith('v'))
-                }
+                expression { return env.SHOULD_BUILD == 'true' }
             }
             steps {
-                script {
-                    def tagName = env.GIT_TAG
-                    docker.build("${DOCKER_IMAGE}:${tagName}")
-                }
+                sh 'echo "Building..."'
+                // Add your build commands here
             }
         }
-        stage('Deploy to Integration') {
+
+        stage('Test') {
             when {
-                expression {
-                    return BRANCH_NAME == 'main' || (TAG_NAME != null && TAG_NAME.startsWith('v'))
-                }
+                expression { return env.SHOULD_BUILD == 'true' }
             }
             steps {
-                script {
-                    def tagName = env.GIT_TAG
-                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=integration"
-                    echo "Deploying to Integration"
-                }
+                sh 'echo "Testing..."'
+                // Add your test commands here
             }
         }
-        stage('Approval for UAT') {
+
+        stage('Deploy') {
             when {
-                expression {
-                    return BRANCH_NAME == 'main' || (TAG_NAME != null && TAG_NAME.startsWith('v'))
-                }
+                expression { return env.SHOULD_BUILD == 'true' }
             }
             steps {
-                input message: 'Deploy to UAT?', ok: 'Deploy'
+                sh 'echo "Deploying..."'
+                // Add your deployment commands here
             }
         }
-        stage('Deploy to UAT') {
-            when {
-                expression {
-                    return BRANCH_NAME == 'main' || (TAG_NAME != null && TAG_NAME.startsWith('v'))
-                }
-            }
-            steps {
-                script {
-                    def tagName = env.GIT_TAG
-                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=uat"
-                    echo "Deploying to UAT"
-                }
-            }
+    }
+
+    post {
+        always {
+            sh 'echo "Cleaning up..."'
+            // Add any cleanup steps here
         }
-        stage('Approval for PROD') {
-            when {
-                expression {
-                    return BRANCH_NAME == 'main' || (TAG_NAME != null && TAG_NAME.startsWith('v'))
-                }
-            }
-            steps {
-                input message: 'Deploy to PROD?', ok: 'Deploy'
-            }
+        success {
+            sh 'echo "Build succeeded!"'
         }
-        stage('Deploy to PROD') {
-            when {
-                expression {
-                    return BRANCH_NAME == 'main' || (TAG_NAME != null && TAG_NAME.startsWith('v'))
-                }
-            }
-            steps {
-                script {
-                    def tagName = env.GIT_TAG
-                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${tagName} --namespace=prod"
-                    echo "Deploying to PROD"
-                }
-            }
+        failure {
+            sh 'echo "Build failed!"'
         }
     }
 }
