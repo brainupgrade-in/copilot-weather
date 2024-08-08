@@ -8,7 +8,6 @@ Click on Install it free
 Select the current repo to add to GitGuardian
 ```
 ### SonarCloud
-### SonarCloud
 To integrate SonarCloud using GitHub Apps integration, follow these steps:
 
 1. Go to the [GitHub Apps Marketplace](https://github.com/marketplace?type=apps) and search for SonarCloud.
