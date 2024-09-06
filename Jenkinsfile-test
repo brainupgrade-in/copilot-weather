@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "brainupgrade/copilot-weather"
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    def branchName = env.CHANGE_BRANCH
+                    docker.build("${DOCKER_IMAGE}:${branchName}")
+                }
+            }
+        }
+        stage('Test') {
+            when {
+                changeRequest()
+            }
+            steps {
+                script {
+                    echo "Running tests for pull request"
+                    // Add your test commands here, e.g., sh 'npm test'
+                }
+            }
+        }
+        stage('Deploy to Test Environment') {
+            when {
+                changeRequest()
+            }
+            steps {
+                script {
+                    def branchName = env.CHANGE_BRANCH
+                    // sh "kubectl set image deployment/copilot-weather --image=${DOCKER_IMAGE}:${branchName} --namespace=test"
+                    echo "Deploying to Test Environment"
+                }
+            }
+        }
+    }
+}
